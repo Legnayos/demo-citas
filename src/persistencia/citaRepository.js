@@ -20,12 +20,20 @@ async function existeEnHorario(profesional_id, fecha_hora) {
 }
 
 async function guardar({ paciente, profesional_id, fecha_hora }) {
-  const resultado = await pool.query(
-    `INSERT INTO citas (paciente, profesional_id, fecha_hora)
-     VALUES ($1, $2, $3) RETURNING id`,
-    [paciente, profesional_id, fecha_hora]
-  );
-  return resultado.rows[0].id;
+  try {
+    const resultado = await pool.query(
+      `INSERT INTO citas (paciente, profesional_id, fecha_hora)
+       VALUES ($1, $2, $3) RETURNING id`,
+      [paciente, profesional_id, fecha_hora]
+    );
+    return resultado.rows[0].id;
+  } catch (err) {
+    if (err.code === '23505') { // unique_violation
+      const { ErrorDeNegocio } = require('../dominio/reglasDeAgenda');
+      throw new ErrorDeNegocio('AGENDA_OCUPADA', 'Ese profesional ya tiene una cita a esa hora');
+    }
+    throw err;
+  }
 }
 
 module.exports = { listarTodas, existeEnHorario, guardar };

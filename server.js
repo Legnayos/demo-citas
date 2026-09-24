@@ -2,12 +2,15 @@
 // aquí solo se configura Express y se conecta la capa de presentación.
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const path = require('path');
 const citasRoutes = require('./src/presentacion/citasRoutes');
 
 const app = express();
 app.use(cors());
+app.use(compression());
 app.use(express.json());
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', citasRoutes);
 
