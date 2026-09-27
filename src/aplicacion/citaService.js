@@ -3,6 +3,14 @@ const reglas = require('../dominio/reglasDeAgenda');
 const citaRepository = require('../persistencia/citaRepository');
 const profesionalRepository = require('../persistencia/profesionalRepository');
 
+function normalizarDatos({ paciente, profesional_id, fecha_hora }) {
+  return {
+    paciente: typeof paciente === 'string' ? paciente.trim() : paciente,
+    profesional_id: Number(profesional_id),
+    fecha_hora,
+  };
+}
+
 async function consultarCitas() {
   return citaRepository.listarTodas();
 }
@@ -12,10 +20,11 @@ async function consultarProfesionales() {
 }
 
 async function reservarCita(datos) {
-  reglas.validarDatosCompletos(datos);
-  reglas.validarFechaFutura(datos.fecha_hora);
+  const entrada = normalizarDatos(datos);
+  reglas.validarDatosCompletos(entrada);
+  reglas.validarFechaFutura(entrada.fecha_hora);
 
-  const id = await citaRepository.guardar(datos);
+  const id = await citaRepository.guardar(entrada);
   return { mensaje: 'Cita creada', id };
 }
 
