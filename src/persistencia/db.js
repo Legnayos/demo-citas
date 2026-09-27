@@ -9,9 +9,11 @@ const isLocalDevelopment = !connectionString.includes('supabase') && !connection
 const pool = new Pool({
   connectionString,
   ssl: isLocalDevelopment ? false : { rejectUnauthorized: false },
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  max: 5,
+  idleTimeoutMillis: 15000,
+  connectionTimeoutMillis: 2000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 1000,
 });
 
 if (!process.env.DATABASE_URL) {
