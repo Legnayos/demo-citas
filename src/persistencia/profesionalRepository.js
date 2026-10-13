@@ -1,34 +1,38 @@
-// Acceso a datos del catálogo de profesionales.
-const pool = require('./db');
+// Adaptador PostgreSQL del catálogo de profesionales.
+// Recibe el pool por inyección: este módulo ya no importa db.js.
 
-const CACHE_TTL_MS = 60000;
-const cache = new Map();
+function crearProfesionalRepository({ pool }) {
+  const CACHE_TTL_MS = 60000;
+  const CACHE_KEY = 'profesionales:listarTodos';
+  const cache = new Map();
 
-function leerCache(clave) {
-  const entrada = cache.get(clave);
-  if (!entrada) return null;
-  if (entrada.expiresAt <= Date.now()) {
-    cache.delete(clave);
-    return null;
+  function leerCache(clave) {
+    const entrada = cache.get(clave);
+    if (!entrada) return null;
+    if (entrada.expiresAt <= Date.now()) {
+      cache.delete(clave);
+      return null;
+    }
+    return entrada.valor;
   }
-  return entrada.valor;
+
+  function guardarCache(clave, valor) {
+    cache.set(clave, { valor, expiresAt: Date.now() + CACHE_TTL_MS });
+  }
+
+  async function listarTodos() {
+    const cacheado = leerCache(CACHE_KEY);
+    if (cacheado) return cacheado;
+
+    const resultado = await pool.query(
+      'SELECT id, nombre, especialidad FROM profesionales ORDER BY nombre'
+    );
+
+    guardarCache(CACHE_KEY, resultado.rows);
+    return resultado.rows;
+  }
+
+  return { listarTodos };
 }
 
-function guardarCache(clave, valor) {
-  cache.set(clave, { valor, expiresAt: Date.now() + CACHE_TTL_MS });
-}
-
-async function listarTodos() {
-  const cacheKey = 'profesionales:listarTodos';
-  const cacheado = leerCache(cacheKey);
-  if (cacheado) return cacheado;
-
-  const resultado = await pool.query(
-    'SELECT id, nombre, especialidad FROM profesionales ORDER BY nombre'
-  );
-
-  guardarCache(cacheKey, resultado.rows);
-  return resultado.rows;
-}
-
-module.exports = { listarTodos };
+module.exports = { crearProfesionalRepository };
