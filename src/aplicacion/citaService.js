@@ -28,15 +28,13 @@ function crearCitaService({ citaRepository, profesionalRepository }) {
   }
 
   async function reservarCita(datos) {
-    const entrada = normalizarDatos(datos);
-    reglas.validarDatosCompletos(entrada);
-    reglas.validarFechaFutura(entrada.fecha_hora);
-
-    const id = await citaRepository.guardar(entrada);
-    // El repositorio devuelve null si el horario estaba ocupado;
-    // la regla de negocio decide qué hacer con ese hecho.
-    reglas.validarAgendaLibre(id === null);
-
+    reglas.validarDatosCompletos(datos);
+    reglas.validarFechaFutura(datos.fecha_hora);
+    const ocupado = await citaRepository.existeEnHorario(
+      datos.profesional_id, datos.fecha_hora
+    );
+    reglas.validarAgendaLibre(ocupado);
+    const id = await citaRepository.guardar(datos);
     return { mensaje: 'Cita creada', id };
   }
 
