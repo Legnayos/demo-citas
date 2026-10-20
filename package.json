@@ -4,7 +4,8 @@
   "description": "Demo de arquitectura Cliente-Servidor: cliente web + API Express + Postgres en Supabase, desplegada en Render. Versión refactorizada en capas. Arquitectura de Sistemas I 2026-2, Semana 8.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"

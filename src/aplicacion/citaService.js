@@ -15,7 +15,7 @@ function normalizarDatos({ paciente, profesional_id, fecha_hora }) {
   };
 }
 
-function crearCitaService({ citaRepository, profesionalRepository }) {
+function crearCitaService({ citaRepository, profesionalRepository, reloj = () => new Date() }) {
   validarCitaRepository(citaRepository);
   validarProfesionalRepository(profesionalRepository);
 
@@ -27,14 +27,19 @@ function crearCitaService({ citaRepository, profesionalRepository }) {
     return profesionalRepository.listarTodos();
   }
 
-  async function reservarCita(datos) {
-    reglas.validarDatosCompletos(datos);
-    reglas.validarFechaFutura(datos.fecha_hora);
+    async function reservarCita(datos) {
+    const entrada = normalizarDatos(datos);
+    reglas.validarDatosCompletos(entrada);
+    reglas.validarFechaFutura(entrada.fecha_hora, reloj());
+
     const ocupado = await citaRepository.existeEnHorario(
-      datos.profesional_id, datos.fecha_hora
+      entrada.profesional_id, entrada.fecha_hora
     );
     reglas.validarAgendaLibre(ocupado);
-    const id = await citaRepository.guardar(datos);
+
+    const id = await citaRepository.guardar(entrada);
+    // Respaldo ante carrera: otro insert ganó entre la consulta y el guardado.
+    reglas.validarAgendaLibre(id === null);
     return { mensaje: 'Cita creada', id };
   }
 

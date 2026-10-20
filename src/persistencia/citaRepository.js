@@ -6,6 +6,14 @@ function crearCitaRepository({ pool }) {
   const CACHE_KEY = 'citas:listarTodas';
   const cache = new Map();
 
+  async function existeEnHorario(profesional_id, fecha_hora) {
+    const resultado = await pool.query(
+      'SELECT 1 FROM citas WHERE profesional_id = $1 AND fecha_hora = $2 LIMIT 1',
+      [profesional_id, fecha_hora]
+    );
+    return resultado.rowCount > 0;
+  }
+
   function leerCache(clave) {
     const entrada = cache.get(clave);
     if (!entrada) return null;
@@ -52,7 +60,7 @@ function crearCitaRepository({ pool }) {
     return resultado.rows[0].id;
   }
 
-  return { listarTodas, guardar };
+  return { listarTodas, existeEnHorario, guardar };
 }
 
 module.exports = { crearCitaRepository };

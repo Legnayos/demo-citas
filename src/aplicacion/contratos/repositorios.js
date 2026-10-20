@@ -23,7 +23,7 @@ function exigirMetodos(nombre, objeto, metodos) {
   }
   
   function validarCitaRepository(repositorio) {
-    exigirMetodos('citaRepository', repositorio, ['listarTodas', 'guardar']);
+    exigirMetodos('citaRepository', repositorio, ['listarTodas', 'existeEnHorario', 'guardar']);
   }
   
   function validarProfesionalRepository(repositorio) {
