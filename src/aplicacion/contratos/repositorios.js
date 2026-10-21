@@ -17,7 +17,7 @@
 function exigirMetodos(nombre, objeto, metodos) {
     for (const metodo of metodos) {
       if (!objeto || typeof objeto[metodo] !== 'function') {
-        throw new Error(`${nombre} debe implementar el método ${metodo}()`);
+        throw new TypeError(`${nombre} debe implementar ${metodo}()`);
       }
     }
   }
